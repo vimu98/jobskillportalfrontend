@@ -2,7 +2,7 @@ import { Avatar, Box, Button, Card, Typography } from '@mui/material';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-function DisplayCard({ job }) {
+function JobCard({ job}) {
   const navigate = useNavigate();
 
   const handleClick = () => {
@@ -12,8 +12,7 @@ function DisplayCard({ job }) {
 
   return (
     <Box>
-      <Card sx={{ width: '300px', padding: '20px', borderRadius: '10px', margin: '10px' }}>
-        <Avatar>{job.id}</Avatar>
+      <Card sx={{ width: '300px', height: '200px' , padding: '20px', borderRadius: '10px', margin: '10px' }}>
         <Typography variant="h4" color="initial">{job.title}</Typography>
         <Typography variant="h5" color="initial">{job.description}</Typography>
         <Button variant="contained" color="primary" onClick={handleClick}>
@@ -24,4 +23,4 @@ function DisplayCard({ job }) {
   );
 }
 
-export default DisplayCard;
+export default JobCard;

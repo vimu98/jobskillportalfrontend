@@ -4,6 +4,8 @@ import LoginPage from "./pages/LoginPage/LoginPage";
 import { useState, useEffect } from "react";
 import HomePage from "./pages/HomePage/HomePage";
 import JobDetails from "./pages/JobDetails/JobDetails";
+import JobPage from "./pages/JobPage/JobPage";
+import TrainingPage from "./pages/TrainingPage/TrainingPage";
 
 function App() {
 
@@ -23,10 +25,12 @@ function App() {
       <div>
         {hasToken ? 
           <Routes>
-          <Route element={<Navigate to={"/"} />} path="*"></Route>
-          <Route element={<HomePage />} path="/"></Route>
+          <Route element={<Navigate to={"/home"} />} path="*"></Route>
+          <Route element={<HomePage />} path="/home"></Route>
           <Route element={<JobDetails />} path="/jobdetails"></Route>
-        
+          <Route element={<JobPage />} path="/jobs"></Route>
+          <Route element={<TrainingPage />} path="/training programs"></Route>
+
          
         </Routes>
          : 
