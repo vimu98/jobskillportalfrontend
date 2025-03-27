@@ -101,6 +101,7 @@ const Register = () => {
             <MenuItem value="JOB_SEEKER">Job Seeker</MenuItem>
             <MenuItem value="EMPLOYER">Employer</MenuItem>
             <MenuItem value="TRAINER">Trainer</MenuItem>
+            <MenuItem value="ADMIN">Admin</MenuItem>
           </Select>
         </FormControl>
 

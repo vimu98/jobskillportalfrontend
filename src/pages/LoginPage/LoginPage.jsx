@@ -1,34 +1,28 @@
 import React, { useState } from "react";
 import { Box, TextField, Button, Typography } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
-import instance from "../../service/AxiosOrder";
-
+import { useAuth } from "../../context/AuthContext";
 
 function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  function uLogin() {
+  const handleLogin = async () => {
     if (!email || !password) {
       alert("Please enter both email and password");
       return;
     }
 
-    instance
-      .post("/auth/login", { email, password }, { 
-        headers: { "Content-Type": "application/json" } 
-      })
-      .then((response) => {
-        localStorage.setItem("iap-final-token", response.data);
-        alert("Login successful");
-        navigate("/");
-      })
-      .catch((error) => {
-        alert("Login failed. Please check your credentials.");
-        console.error("Login error:", error);
-      });
-  }
+    const success = await login(email, password);
+    if (success) {
+      alert("Login successful");
+      navigate("/");
+    } else {
+      alert("Login failed. Please check your credentials.");
+    }
+  };
 
   return (
     <Box
@@ -73,7 +67,7 @@ function LoginPage() {
           fullWidth
         />
 
-        <Button onClick={uLogin} variant="contained" color="primary" fullWidth>
+        <Button onClick={handleLogin} variant="contained" color="primary" fullWidth>
           Login
         </Button>
 
