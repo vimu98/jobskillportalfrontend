@@ -29,7 +29,7 @@ const SuggetionCarousel = () => {
       try {
         const response = await axios.post(
           "http://localhost:8080/api/jobs/match-jobs",
-          { file: resume },
+          { resumeUrl: resume },
           { headers: { "Content-Type": "application/json" } }
         );
 
@@ -52,7 +52,7 @@ const SuggetionCarousel = () => {
   }, [resume]); // Fetch jobs when `resume` changes
 
   return (
-    <Box sx={{ textAlign: "center", my: 5 }}>
+    <Box sx={{ textAlign: "center", marginBottom : 4}}>
       {/* Job Suggestions Count */}
       <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold", color: "#333" }}>
         {isLoading ? "Loading job suggestions..." : `Found ${jobs.length} job suggestions`}
