@@ -2,13 +2,13 @@ import React, { useEffect, useState } from "react";
 import JobCard from "../../component/JobCard/JobCard";
 import axios from "axios";
 import Navbar from "../../component/NavBar/Navbar";
-import { Grid, Pagination, Typography } from "@mui/material";
+import { Grid, Typography } from "@mui/material";
 import CustomPagination from "../../component/Pagination/CustomPagination";
 import HeroSection from "../../component/HeroSection/HeroSection";
 import SuggetionCarousel from "../../component/SuggetionCarousel/SuggetionCarousel";
 
 const HomePage = () => {
-  const jobsPerPage = 12; 
+  const jobsPerPage = 12;
   const [currentPage, setCurrentPage] = useState(1);
   const [jobs, setJobs] = useState([]);
 
@@ -21,10 +21,24 @@ const HomePage = () => {
       })
       .then((response) => {
         console.log(response.data);
-        setJobs(response.data); 
+        
+        // Get today's date in the format yyyy-mm-dd
+        const today = new Date().toISOString().split("T")[0];
+
+        console.log("Today:", today);
+
+        // Filter jobs by today's date
+        const latestJobs = response.data.filter((job) => {
+          const publishDate = job.publishDate;
+          console.log("Publish Date:", job.publishDate);
+          // Check if the publish_date exists and matches today's date
+          return publishDate === today;
+        });
+
+        setJobs(latestJobs); // Set the filtered jobs
       })
       .catch((error) => {
-        console.error(" API Error:", error);
+        console.error("API Error:", error);
       });
   }, []);
 
@@ -33,8 +47,6 @@ const HomePage = () => {
   const totalPages = Math.ceil(jobs.length / jobsPerPage);
   const startIndex = (currentPage - 1) * jobsPerPage;
   const displayedJobs = jobs.slice(startIndex, startIndex + jobsPerPage);
-  
- 
 
   return (
     <div>
@@ -51,7 +63,7 @@ const HomePage = () => {
         ) : (
           <Grid item xs={12}>
             <Typography variant="h6" align="center">
-              No jobs available
+              No jobs available for today
             </Typography>
           </Grid>
         )}

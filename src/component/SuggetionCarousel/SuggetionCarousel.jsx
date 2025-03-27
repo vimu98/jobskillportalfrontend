@@ -1,5 +1,5 @@
-import React, { useRef, useEffect } from "react";
-import { Box, IconButton } from "@mui/material";
+import React, { useRef, useEffect, useState } from "react";
+import { Box, IconButton, CircularProgress, Typography } from "@mui/material";
 import { ArrowBack, ArrowForward } from "@mui/icons-material";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
@@ -7,62 +7,57 @@ import "swiper/css/navigation";
 import "swiper/css/autoplay";
 import { Navigation, Autoplay } from "swiper/modules";
 import JobCard from "../JobCard/JobCard";
-
-const jobs = [
-  {
-    id: 1,
-    title: "Frontend Developer",
-    company: "Google",
-    location: "Colombo, Sri Lanka",
-    salary: "$70,000 - $90,000",
-    logo: "https://logo.clearbit.com/google.com",
-    description: "We are looking for a skilled React developer to join our team.",
-  },
-  {
-    id: 2,
-    title: "Backend Developer",
-    company: "Amazon",
-    location: "Kandy, Sri Lanka",
-    salary: "$80,000 - $100,000",
-    logo: "https://logo.clearbit.com/amazon.com",
-    description: "Experienced Node.js developer needed for a large-scale project.",
-  },
-  {
-    id: 3,
-    title: "UI/UX Designer",
-    company: "Figma",
-    location: "Remote",
-    salary: "$50,000 - $70,000",
-    logo: "https://logo.clearbit.com/figma.com",
-    description: "Seeking a creative UI/UX designer for product innovation.",
-  },
-  {
-    id: 4,
-    title: "Data Scientist",
-    company: "Microsoft",
-    location: "Seattle, USA",
-    salary: "$100,000 - $120,000",
-    logo: "https://logo.clearbit.com/microsoft.com",
-    description: "Work with AI and big data to drive business insights.",
-  },
-];
+import axios from "axios";
+import { useAuth } from "./../../context/AuthContext";
 
 const SuggetionCarousel = () => {
   const swiperRef = useRef(null);
   const prevRef = useRef(null);
   const nextRef = useRef(null);
+  const { resume } = useAuth(); // Resume URL from Auth Context
+  const [jobs, setJobs] = useState([]);
+  const [isLoading, setIsLoading] = useState(false); // Loading state
 
+  // Fetch job suggestions when resume URL changes
   useEffect(() => {
-    if (swiperRef.current && swiperRef.current.swiper) {
-      swiperRef.current.swiper.params.navigation.prevEl = prevRef.current;
-      swiperRef.current.swiper.params.navigation.nextEl = nextRef.current;
-      swiperRef.current.swiper.navigation.init();
-      swiperRef.current.swiper.navigation.update();
-    }
-  }, []);
+    if (!resume) return; // Avoid API call if resume URL is missing
+
+    const postJobMatch = async () => {
+      console.log("📄 Resume URL:", resume);
+      setIsLoading(true);
+
+      try {
+        const response = await axios.post(
+          "http://localhost:8080/api/jobs/match-jobs",
+          { file: resume },
+          { headers: { "Content-Type": "application/json" } }
+        );
+
+        console.log("✅ API Response:", response.data);
+
+        if (Array.isArray(response.data) && response.data.length > 0) {
+          setJobs(response.data);
+        } else {
+          console.warn("⚠️ No jobs found for the given resume.");
+          setJobs([]);
+        }
+      } catch (error) {
+        console.error("❌ API Error:", error.response ? error.response.data : error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    postJobMatch();
+  }, [resume]); // Fetch jobs when `resume` changes
 
   return (
     <Box sx={{ textAlign: "center", my: 5 }}>
+      {/* Job Suggestions Count */}
+      <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold", color: "#333" }}>
+        {isLoading ? "Loading job suggestions..." : `Found ${jobs.length} job suggestions`}
+      </Typography>
+
       <Box
         sx={{
           maxWidth: "1000px",
@@ -71,55 +66,76 @@ const SuggetionCarousel = () => {
           overflow: "hidden",
         }}
       >
-        {/* SwiperJS Carousel with Auto-Rotate */}
-        <Swiper
-          ref={swiperRef}
-          spaceBetween={200}
-          slidesPerView={3}
-          loop={true}
-          autoplay={{
-            delay: 3000, // Auto-slide every 3 seconds
-            disableOnInteraction: false,
-          }}
-          breakpoints={{
-            768: { slidesPerView: 3 },
-          }}
-          modules={[Navigation, Autoplay]}
-        >
-          {jobs.map((job) => (
-            <SwiperSlide key={job.id}>
-              <JobCard job={job} />
-            </SwiperSlide>
-          ))}
-        </Swiper>
+        {isLoading ? (
+          <Box sx={{ display: "flex", justifyContent: "center", py: 5 }}>
+            <CircularProgress />
+          </Box>
+        ) : jobs.length === 0 ? (
+          <Box sx={{ textAlign: "center", py: 5, color: "gray" }}>
+            No job suggestions found.
+          </Box>
+        ) : (
+          <Swiper
+            ref={swiperRef}
+            spaceBetween={100}
+            slidesPerView={Math.min(3, jobs.length)} // Prevent errors
+            loop={jobs.length > 3} // Enable loop only if more than 3 jobs
+            autoplay={{
+              delay: 3000,
+              disableOnInteraction: false,
+            }}
+            navigation={{ prevEl: prevRef.current, nextEl: nextRef.current }}
+            modules={[Navigation, Autoplay]}
+            onSwiper={(swiper) => {
+              setTimeout(() => {
+                if (prevRef.current && nextRef.current) {
+                  swiper.params.navigation.prevEl = prevRef.current;
+                  swiper.params.navigation.nextEl = nextRef.current;
+                  swiper.navigation.init();
+                  swiper.navigation.update();
+                }
+              }, 100);
+            }}
+          >
+            {jobs.map((job) => (
+              <SwiperSlide key={job.id}>
+                <JobCard job={job} />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        )}
 
-        {/* Custom Navigation Buttons */}
-        <IconButton
-          ref={prevRef}
-          sx={{
-            position: "absolute",
-            left: 0,
-            top: "50%",
-            transform: "translateY(-50%)",
-            zIndex: 10,
-            backgroundColor: "white",
-          }}
-        >
-          <ArrowBack />
-        </IconButton>
-        <IconButton
-          ref={nextRef}
-          sx={{
-            position: "absolute",
-            right: 0,
-            top: "50%",
-            transform: "translateY(-50%)",
-            zIndex: 10,
-            backgroundColor: "white",
-          }}
-        >
-          <ArrowForward />
-        </IconButton>
+        {/* Navigation Buttons (only if jobs exist) */}
+        {jobs.length > 0 && (
+          <>
+            <IconButton
+              ref={prevRef}
+              sx={{
+                position: "absolute",
+                left: 0,
+                top: "50%",
+                transform: "translateY(-50%)",
+                zIndex: 10,
+                backgroundColor: "white",
+              }}
+            >
+              <ArrowBack />
+            </IconButton>
+            <IconButton
+              ref={nextRef}
+              sx={{
+                position: "absolute",
+                right: 0,
+                top: "50%",
+                transform: "translateY(-50%)",
+                zIndex: 10,
+                backgroundColor: "white",
+              }}
+            >
+              <ArrowForward />
+            </IconButton>
+          </>
+        )}
       </Box>
     </Box>
   );
