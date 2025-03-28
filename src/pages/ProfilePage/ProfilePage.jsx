@@ -20,6 +20,7 @@ import {
   import { useAuth } from "./../../context/AuthContext";
   import { useState } from "react";
   import axios from "axios";
+import AppliedJobs from "../../component/AppliedJobs/AppliedJobs";
   
   const ProfilePage = () => {
     const { user, resume, setUser, setResume } = useAuth();
@@ -142,6 +143,7 @@ import {
           <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
             Applied Jobs
           </Typography>
+          <AppliedJobs />
         </Card>
   
         {/* Update Profile & Resume Upload Modal */}
