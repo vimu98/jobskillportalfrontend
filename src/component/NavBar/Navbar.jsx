@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate
+import { Link, useNavigate } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -13,14 +13,31 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
-
-const pages = ['Home', 'Jobs', 'Training Programs'];
-const settings = ['Profile', 'Logout'];
+import { useAuth } from '../../context/AuthContext';
 
 function ResponsiveAppBar() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
-  const navigate = useNavigate(); // Initialize navigate
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  // Retrieve user role from localStorage
+  const userRole = localStorage.getItem('iap-final-role'); // Example: 'admin', 'user', 'guest'
+
+  // Define navigation items based on user role
+  const pages = userRole === 'EMPLOYER' 
+    ? ['Manage Companies', 'Manage Vacansies', 'Manage Applications']
+    : userRole === 'JOB_SEEKER' 
+      ? ['Home', 'Jobs', 'Training Programs']:[];
+
+  const settings = ['Profile', 'Logout'];
+
+  const handleLogout = () => {
+    logout();
+    localStorage.removeItem('userRole'); // Remove user role on logout
+    navigate('/login');
+    window.location.reload();
+  };
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -36,12 +53,10 @@ function ResponsiveAppBar() {
 
   const handleCloseUserMenu = (setting) => {
     setAnchorElUser(null);
-    
     if (setting === 'Profile') {
-      navigate('/profile'); // Navigate to Profile page
+      navigate('/profile');
     } else if (setting === 'Logout') {
-      // Add logout logic if needed
-      console.log('User logged out');
+      handleLogout();
     }
   };
 
@@ -67,6 +82,7 @@ function ResponsiveAppBar() {
             LOGO
           </Typography>
 
+          {/* Mobile Menu */}
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
             <IconButton
               size="large"
@@ -81,22 +97,16 @@ function ResponsiveAppBar() {
             <Menu
               id="menu-appbar"
               anchorEl={anchorElNav}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
-              }}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
               keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'left',
-              }}
+              transformOrigin={{ vertical: 'top', horizontal: 'left' }}
               open={Boolean(anchorElNav)}
               onClose={handleCloseNavMenu}
               sx={{ display: { xs: 'block', md: 'none' } }}
             >
               {pages.map((page) => (
                 <MenuItem key={page} onClick={handleCloseNavMenu}>
-                  <Link to={`/${page.toLowerCase()}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <Link to={`/${page.toLowerCase().replace(/\s+/g, '-')}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                     <Typography sx={{ textAlign: 'center' }}>{page}</Typography>
                   </Link>
                 </MenuItem>
@@ -104,12 +114,13 @@ function ResponsiveAppBar() {
             </Menu>
           </Box>
 
+          {/* Desktop Menu */}
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
             {pages.map((page) => (
               <Button
                 key={page}
                 component={Link}
-                to={`/${page.toLowerCase()}`}
+                to={`/${page.toLowerCase().replace(/\s+/g, '-')}`}
                 sx={{ my: 2, color: 'white', display: 'block' }}
               >
                 {page}
@@ -117,6 +128,7 @@ function ResponsiveAppBar() {
             ))}
           </Box>
 
+          {/* User Menu */}
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
@@ -127,15 +139,9 @@ function ResponsiveAppBar() {
               sx={{ mt: '45px' }}
               id="menu-appbar"
               anchorEl={anchorElUser}
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
+              anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
               keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
+              transformOrigin={{ vertical: 'top', horizontal: 'right' }}
               open={Boolean(anchorElUser)}
               onClose={() => setAnchorElUser(null)}
             >

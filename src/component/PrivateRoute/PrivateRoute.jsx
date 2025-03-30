@@ -1,12 +1,40 @@
 import { Navigate, Outlet } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 const PrivateRoute = ({ allowedRoles }) => {
-  const role = localStorage.getItem("iap-final-role"); // Get user role from localStorage
+  const [role, setRole] = useState(localStorage.getItem("iap-final-role"));
+  const [defaltNavigate, setDefaultNavigate] = useState("/home");
 
+  useEffect(() => {
+    if (role === "JOB_SEEKER") {
+      setDefaultNavigate("/home");
+    } else if (role === "EMPLOYER") {
+      setDefaultNavigate("/create-vacancy");
+    } else if (role === "ADMIN") {
+      setDefaultNavigate("/admindash");
+    } else if (role === "TRAINER") {
+      setDefaultNavigate("/trainerdash");
+    }
+  }, [role]); 
+
+  useEffect(() => {
+    const checkRole = () => {
+      setRole(localStorage.getItem("iap-final-role"));
+    };
+
+    window.addEventListener("storage", checkRole); // Listen for localStorage changes
+
+    return () => {
+      window.removeEventListener("storage", checkRole); // Cleanup
+    };
+  }, []);
+
+  
+
+  console.log("Allowed Roles:", allowedRoles);
   console.log("Role:", role);
 
-
-  return allowedRoles.includes(role) ? <Outlet /> : <Navigate to="/home" />;
+  return allowedRoles.includes(role?.trim()) ? <Outlet /> : <Navigate to={defaltNavigate} />;
 };
 
 export default PrivateRoute;

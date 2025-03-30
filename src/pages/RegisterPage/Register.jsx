@@ -8,6 +8,7 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("JOB_SEEKER"); // Default role
+  const [profilePicture, setProfilePicture] = useState(null); // Profile picture state
 
   const navigate = useNavigate();
 
@@ -16,15 +17,22 @@ const Register = () => {
   }
 
   function uRegister() {
-    const userData = {
-      name: uName,
-      email: email,
-      password: password,
-      role: role,
-    };
+    const formData = new FormData();
+    formData.append("name", uName);
+    formData.append("email", email);
+    formData.append("password", password);
+    formData.append("role", role);
+
+    if (profilePicture) {
+      formData.append("profilePicture", profilePicture);
+    }
 
     instance
-      .post("/auth/register", userData)
+      .post("/auth/register", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
       .then((response) => {
         console.log(response);
         if (response.data === "User registered successfully!") {
@@ -93,6 +101,7 @@ const Register = () => {
         />
 
         <FormControl fullWidth>
+          <InputLabel>Role</InputLabel>
           <Select
             value={role}
             onChange={(e) => setRole(e.target.value)}
@@ -104,6 +113,14 @@ const Register = () => {
             <MenuItem value="ADMIN">Admin</MenuItem>
           </Select>
         </FormControl>
+
+        {/* Profile Picture Upload */}
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setProfilePicture(e.target.files[0])}
+          style={{ marginTop: "10px" }}
+        />
 
         <Button
           type="submit"
