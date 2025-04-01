@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { Container, Paper, Typography, Grid, Chip, Divider, Button, Snackbar } from '@mui/material';
 import axios from 'axios';
 import { useAuth } from "./../../context/AuthContext";
+import Chatbot from '../../component/Chatbot/Chatbot'; // Import the Chatbot component
 
 function JobDetails() {
   const location = useLocation();
@@ -158,6 +159,13 @@ function JobDetails() {
           </Typography>
         )}
       </Paper>
+
+
+ 
+      <Paper>
+        <Chatbot job={job} />
+      </Paper>
+  
 
       {/* Snackbar to show success or error message */}
       <Snackbar
