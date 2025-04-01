@@ -9,7 +9,7 @@ const PrivateRoute = ({ allowedRoles }) => {
     if (role === "JOB_SEEKER") {
       setDefaultNavigate("/home");
     } else if (role === "EMPLOYER") {
-      setDefaultNavigate("/create-vacancy");
+      setDefaultNavigate("/manage-vacansies");
     } else if (role === "ADMIN") {
       setDefaultNavigate("/admindash");
     } else if (role === "TRAINER") {

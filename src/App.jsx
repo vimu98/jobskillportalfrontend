@@ -9,9 +9,10 @@ import PrivateRoute from "./component/PrivateRoute/PrivateRoute";
 import { useState, useEffect } from "react";
 import ProfilePage from "./pages/ProfilePage/ProfilePage";
 import { AuthProvider } from "./context/AuthContext";
-import CreateJobsPage from "./pages/CreateJobsPage/CreateJobsPage";
 import CompanyPage from "./pages/CompanyPage/CompanyPage";
 import VacancyPage from "./pages/VacancyPage/VacancyPage";
+import ApplicationsPage from "./pages/ApplicaionsPage/ApplicationsPage";
+import { JobsProvider } from "./context/JobsProvider";
 
 function App() {
   const [hasToken, sethasToken] = useState(false);
@@ -29,6 +30,7 @@ function App() {
   return (
     <div>
       <AuthProvider>
+      <JobsProvider>
         {hasToken ? (
           <Routes>
             {/* Common routes for authenticated users */}
@@ -49,10 +51,13 @@ function App() {
               <Route element={<Navigate to={"/home"} />} path="*" />
             </Route>
 
+            
             {/* Routes for Employers */}
             <Route element={<PrivateRoute allowedRoles={["EMPLOYER"]} />}>
+            
               <Route element={<CompanyPage />} path="/manage-companies" />
               <Route element={<VacancyPage />} path="/manage-vacansies" />
+              <Route element={<ApplicationsPage />} path="/manage-applications" />
               
             </Route>
           </Routes>
@@ -66,6 +71,7 @@ function App() {
             <Route element={<Register />} path="/register" />
           </Routes>
         )}
+        </JobsProvider>
       </AuthProvider>
     </div>
   );

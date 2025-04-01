@@ -26,7 +26,7 @@ function ResponsiveAppBar() {
 
   // Define navigation items based on user role
   const pages = userRole === 'EMPLOYER' 
-    ? ['Manage Companies', 'Manage Vacansies', 'Manage Applications']
+    ? ['Manage Vacansies', 'Manage Companies', 'Manage Applications']
     : userRole === 'JOB_SEEKER' 
       ? ['Home', 'Jobs', 'Training Programs']:[];
 
