@@ -11,8 +11,12 @@ import ProfilePage from "./pages/ProfilePage/ProfilePage";
 import { AuthProvider } from "./context/AuthContext";
 import CompanyPage from "./pages/CompanyPage/CompanyPage";
 import VacancyPage from "./pages/VacancyPage/VacancyPage";
+import CourseDetails from "./pages/CourseDetails/CourseDetails";
 import ApplicationsPage from "./pages/ApplicaionsPage/ApplicationsPage";
 import { JobsProvider } from "./context/JobsProvider";
+import AppliedJobsPage from "./pages/AppliedJobsPage/AppliedJobsPage";
+import EnrollmentsPage from "./pages/EnrollmentsPage/EnrollmentsPage";
+import CourseManagementPage from "./pages/CourseManagementPage/CourseManagementPage";
 
 function App() {
   const [hasToken, sethasToken] = useState(false);
@@ -36,7 +40,7 @@ function App() {
             {/* Common routes for authenticated users */}
             <Route
               element={
-                <PrivateRoute allowedRoles={["JOB_SEEKER", "EMPLOYER"]} />
+                <PrivateRoute allowedRoles={["JOB_SEEKER", "EMPLOYER", "TRAINER"]} />
               }
             >
               <Route element={<ProfilePage />} path="/profile" />
@@ -47,6 +51,9 @@ function App() {
               <Route element={<TrainingPage />} path="/training-programs" />
               <Route element={<HomePage />} path="/home" />
               <Route element={<JobDetails />} path="/jobdetails" />
+              <Route element={<AppliedJobsPage />} path="/my-applications" />
+              <Route element={<EnrollmentsPage />} path="/my-trainings" />
+              <Route element={<CourseDetails />} path="/coursedetails"  />
               <Route element={<JobPage />} path="/jobs" />
               <Route element={<Navigate to={"/home"} />} path="*" />
             </Route>
@@ -58,6 +65,14 @@ function App() {
               <Route element={<CompanyPage />} path="/manage-companies" />
               <Route element={<VacancyPage />} path="/manage-vacansies" />
               <Route element={<ApplicationsPage />} path="/manage-applications" />
+              
+            </Route>
+
+            {/* Routes for Trainer */}
+            <Route element={<PrivateRoute allowedRoles={["TRAINER"]} />}>
+            
+              <Route element={<CourseManagementPage />} path="/manage-courses" />
+      
               
             </Route>
           </Routes>

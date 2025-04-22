@@ -28,7 +28,7 @@ function ResponsiveAppBar() {
   const pages = userRole === 'EMPLOYER' 
     ? ['Manage Vacansies', 'Manage Companies', 'Manage Applications']
     : userRole === 'JOB_SEEKER' 
-      ? ['Home', 'Jobs', 'Training Programs']:[];
+      ? ['Home', 'Jobs', 'Training Programs', "My Applications", "My Trainings"]:[];
 
   const settings = ['Profile', 'Logout'];
 

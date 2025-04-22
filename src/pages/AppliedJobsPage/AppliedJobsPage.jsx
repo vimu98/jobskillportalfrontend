@@ -15,12 +15,14 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button
+  Button,
+  Box
 } from '@mui/material';
 import { Visibility, Delete } from '@mui/icons-material';
-import { useAuth } from "./../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
+import NavBar from "../../component/NavBar/Navbar"
 
-function AppliedJobs() {
+function AppliedJobsPage() {
   const [appliedJobs, setAppliedJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -86,7 +88,11 @@ function AppliedJobs() {
   };
 
   return (
+    <Box>
+<NavBar />
+ 
     <Container maxWidth="lg" sx={{ mt: 4 }}>
+    
       <Paper elevation={3} sx={{ padding: 3 }}>
         <Typography variant="h4" gutterBottom>
           Applied Jobs
@@ -161,7 +167,9 @@ function AppliedJobs() {
         </DialogActions>
       </Dialog>
     </Container>
+    </Box>
+    
   );
 }
 
-export default AppliedJobs;
+export default AppliedJobsPage;

@@ -13,7 +13,7 @@ const PrivateRoute = ({ allowedRoles }) => {
     } else if (role === "ADMIN") {
       setDefaultNavigate("/admindash");
     } else if (role === "TRAINER") {
-      setDefaultNavigate("/trainerdash");
+      setDefaultNavigate("/manage-courses");
     }
   }, [role]); 
 

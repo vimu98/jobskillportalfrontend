@@ -20,7 +20,6 @@ import {
 import { useAuth } from "./../../context/AuthContext";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import AppliedJobs from "../../component/AppliedJobs/AppliedJobs";
 
 const ProfilePage = () => {
   const { user, resume, setUser, setResume } = useAuth();
@@ -212,24 +211,6 @@ const ProfilePage = () => {
         </CardContent>
       </Card>
 
-      {/* Applied Jobs Card */}
-      {role === "JOB_SEEKER" && (
-        <Card
-          sx={{
-            maxWidth: "800px",
-            margin: "auto",
-            mt: 3,
-            p: 2,
-            borderRadius: 2,
-            boxShadow: 3,
-          }}
-        >
-          <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
-            Applied Jobs
-          </Typography>
-          <AppliedJobs />
-        </Card>
-      )}
 
       {/* Update Profile & Resume Upload Modal */}
       <Modal open={open} onClose={handleClose}>
