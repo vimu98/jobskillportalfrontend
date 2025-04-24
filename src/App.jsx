@@ -15,8 +15,9 @@ import CourseDetails from "./pages/CourseDetails/CourseDetails";
 import ApplicationsPage from "./pages/ApplicaionsPage/ApplicationsPage";
 import { JobsProvider } from "./context/JobsProvider";
 import AppliedJobsPage from "./pages/AppliedJobsPage/AppliedJobsPage";
-import EnrollmentsPage from "./pages/EnrollmentsPage/EnrollmentsPage";
-import CourseManagementPage from "./pages/CourseManagementPage/CourseManagementPage";
+import EnrollmentsPage from "./pages/EnrollmentsPage/EnrollmentsPage"; 
+import CourseManager from "./pages/CourseManager/CourseManager";
+import RegisteredStudents from "./pages/RegisteredStudents/RegisteredStudents";
 
 function App() {
   const [hasToken, sethasToken] = useState(false);
@@ -71,7 +72,8 @@ function App() {
             {/* Routes for Trainer */}
             <Route element={<PrivateRoute allowedRoles={["TRAINER"]} />}>
             
-              <Route element={<CourseManagementPage />} path="/manage-courses" />
+              <Route element={<CourseManager />} path="/manage-courses" />
+              <Route element={<RegisteredStudents />} path="/registered-students" />
       
               
             </Route>
