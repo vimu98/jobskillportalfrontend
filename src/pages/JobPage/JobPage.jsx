@@ -1,97 +1,71 @@
-import React, { useEffect, useState } from "react";
-import JobCard from "../../component/JobCard/JobCard";
-import axios from "axios";
-import Navbar from "../../component/NavBar/Navbar";
-import { Grid, Typography, TextField, MenuItem, Select, InputLabel, FormControl } from "@mui/material";
-import CustomPagination from "../../component/Pagination/CustomPagination";
-import SuggetionCarousel from "../../component/SuggetionCarousel/SuggetionCarousel";
+import React, { useEffect, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  fetchJobs,
+  setLocationFilter,
+  setIndustryFilter,
+  setMinSalaryFilter,
+  setMaxSalaryFilter,
+  setSearchTerm,
+  applyFilters,
+} from '../../store/jobsSlice';
+import JobCard from '../../component/JobCard/JobCard';
+import Navbar from '../../component/NavBar/Navbar';
+import {
+  Grid,
+  Typography,
+  TextField,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+} from '@mui/material';
+import CustomPagination from '../../component/Pagination/CustomPagination';
+import SuggetionCarousel from '../../component/SuggetionCarousel/SuggetionCarousel';
 
 const JobPage = () => {
   const jobsPerPage = 12;
   const [currentPage, setCurrentPage] = useState(1);
-  const [allJobs, setAllJobs] = useState([]);
-  const [filteredJobs, setFilteredJobs] = useState([]);
-  const [locationFilter, setLocationFilter] = useState("");
-  const [industryFilter, setIndustryFilter] = useState("");
-  const [minSalaryFilter, setMinSalaryFilter] = useState("");
-  const [maxSalaryFilter, setMaxSalaryFilter] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const handleLocationChange = (event) => setLocationFilter(event.target.value);
-  const handleIndustryChange = (event) => setIndustryFilter(event.target.value);
-  const handleMinSalaryChange = (event) => setMinSalaryFilter(event.target.value);
-  const handleMaxSalaryChange = (event) => setMaxSalaryFilter(event.target.value);
-  const handleSearchChange = (event) => setSearchTerm(event.target.value);
+  const dispatch = useDispatch();
+  const { filteredJobs, filters } = useSelector((state) => state.jobs);
 
   useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        const response = await axios.get("http://localhost:8080/api/jobs/all", {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("iap-final-token"),
-          },
-        });
-        setAllJobs(response.data);
-        setFilteredJobs(response.data);
-      } catch (error) {
-        console.error("API Error:", error);
-      }
-    };
-
-    fetchJobs();
-  }, []);
+    dispatch(fetchJobs());
+  }, [dispatch]);
 
   useEffect(() => {
-    let filtered = allJobs;
+    dispatch(applyFilters());
+  }, [filters, dispatch]);
 
-    // Convert filter values to numbers for comparison
-    const minSalary = minSalaryFilter ? Number(minSalaryFilter) : null;
-    const maxSalary = maxSalaryFilter ? Number(maxSalaryFilter) : null;
+  const handleLocationChange = (event) => {
+    dispatch(setLocationFilter(event.target.value));
+  };
 
-    // Filter by location
-    if (locationFilter) {
-      filtered = filtered.filter((job) => job.location === locationFilter);
-    }
+  const handleIndustryChange = (event) => {
+    dispatch(setIndustryFilter(event.target.value));
+  };
 
-    // Filter by industry
-    if (industryFilter) {
-      filtered = filtered.filter((job) => job.industry === industryFilter);
-    }
+  const handleMinSalaryChange = (event) => {
+    dispatch(setMinSalaryFilter(event.target.value));
+  };
 
-    // Filter by salary range
-    if (minSalary !== null) {
-      filtered = filtered.filter((job) => Number(job.salary) >= minSalary);
-    }
+  const handleMaxSalaryChange = (event) => {
+    dispatch(setMaxSalaryFilter(event.target.value));
+  };
 
-    if (maxSalary !== null) {
-      filtered = filtered.filter((job) => Number(job.salary) <= maxSalary);
-    }
-
-    // Filter by job title search
-    if (searchTerm) {
-      filtered = filtered.filter((job) =>
-        job.title.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    setFilteredJobs(filtered);
-  }, [
-    locationFilter,
-    industryFilter,
-    minSalaryFilter,
-    maxSalaryFilter,
-    searchTerm,
-    allJobs,
-  ]);
+  const handleSearchChange = (event) => {
+    dispatch(setSearchTerm(event.target.value));
+  };
 
   const totalPages = Math.ceil(filteredJobs.length / jobsPerPage);
   const startIndex = (currentPage - 1) * jobsPerPage;
   const displayedJobs = filteredJobs.slice(startIndex, startIndex + jobsPerPage);
 
+
   return (
     <div>
       <Navbar />
-     
+      <SuggetionCarousel />
 
       {/* Filters */}
       <Grid container spacing={2} padding={2} justifyContent="space-between">
@@ -99,7 +73,7 @@ const JobPage = () => {
           <FormControl fullWidth>
             <InputLabel>Location</InputLabel>
             <Select
-              value={locationFilter}
+              value={filters.location}
               onChange={handleLocationChange}
               label="Location"
             >
@@ -114,7 +88,7 @@ const JobPage = () => {
           <FormControl fullWidth>
             <InputLabel>Industry</InputLabel>
             <Select
-              value={industryFilter}
+              value={filters.industry}
               onChange={handleIndustryChange}
               label="Industry"
             >
@@ -130,7 +104,7 @@ const JobPage = () => {
             fullWidth
             label="Min Salary"
             type="number"
-            value={minSalaryFilter}
+            value={filters.minSalary}
             onChange={handleMinSalaryChange}
             placeholder="Enter min salary"
             variant="outlined"
@@ -141,7 +115,7 @@ const JobPage = () => {
             fullWidth
             label="Max Salary"
             type="number"
-            value={maxSalaryFilter}
+            value={filters.maxSalary}
             onChange={handleMaxSalaryChange}
             placeholder="Enter max salary"
             variant="outlined"
@@ -156,13 +130,13 @@ const JobPage = () => {
             fullWidth
             label="Search by Job Title"
             variant="outlined"
-            value={searchTerm}
+            value={filters.searchTerm}
             onChange={handleSearchChange}
             placeholder="Search for a job title"
           />
         </Grid>
       </Grid>
-      <SuggetionCarousel />
+
       {/* Job Cards */}
       <Grid container spacing={2} padding={2}>
         {displayedJobs.length > 0 ? (

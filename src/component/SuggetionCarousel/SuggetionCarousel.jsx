@@ -1,140 +1,149 @@
-import React, { useRef, useEffect, useState } from "react";
-import { Box, IconButton, CircularProgress, Typography } from "@mui/material";
-import { ArrowBack, ArrowForward } from "@mui/icons-material";
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/autoplay";
-import { Navigation, Autoplay } from "swiper/modules";
-import JobCard from "../JobCard/JobCard";
-import axios from "axios";
-import { useAuth } from "./../../context/AuthContext";
+import React, { useRef, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  Box,
+  IconButton,
+  CircularProgress,
+  Typography,
+  Grid,
+} from '@mui/material';
+import { ArrowBack, ArrowForward } from '@mui/icons-material';
+import JobCard from '../JobCard/JobCard';
+import { fetchJobSuggestions } from '../../store/jobsSlice';
+import { useAuth } from '../../context/AuthContext';
 
 const SuggetionCarousel = () => {
-  const swiperRef = useRef(null);
-  const prevRef = useRef(null);
-  const nextRef = useRef(null);
-  const { resume } = useAuth(); // Resume URL from Auth Context
-  const [jobs, setJobs] = useState([]);
-  const [isLoading, setIsLoading] = useState(false); // Loading state
+  const dispatch = useDispatch();
+  const { resume } = useAuth();
+  const { suggestedJobs, loading, error } = useSelector((state) => state.jobs);
+  const scrollRef = useRef(null);
 
-  // Fetch job suggestions when resume URL changes
   useEffect(() => {
-    if (!resume) return; // Avoid API call if resume URL is missing
+    if (resume) {
+      dispatch(fetchJobSuggestions(resume));
+    }
+  }, [resume, dispatch]);
 
-    const postJobMatch = async () => {
-      console.log("📄 Resume URL:", resume);
-      setIsLoading(true);
+  
+  const scrollLeft = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+    }
+  };
 
-      try {
-        const response = await axios.post(
-          "http://localhost:8080/api/jobs/match-jobs",
-          { resumeUrl: resume },
-          { headers: { "Content-Type": "application/json" } }
-        );
 
-        console.log("✅ API Response:", response.data);
+  const scrollRight = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+    }
+  };
 
-        if (Array.isArray(response.data) && response.data.length > 0) {
-          setJobs(response.data);
-        } else {
-          console.warn("⚠️ No jobs found for the given resume.");
-          setJobs([]);
-        }
-      } catch (error) {
-        console.error("❌ API Error:", error.response ? error.response.data : error.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
 
-    postJobMatch();
-  }, [resume]); // Fetch jobs when `resume` changes
+  if (!resume) {
+    return (
+      <Box sx={{ textAlign: 'center', py: 5, color: 'gray' }}>
+        <Typography variant="h6">
+          Please upload a resume to see job suggestions.
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
-    <Box sx={{ textAlign: "center", marginBottom : 4}}>
+    <Box sx={{ textAlign: 'center', marginBottom: 4 }}>
       {/* Job Suggestions Count */}
-      <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold", color: "#333" }}>
-        {isLoading ? "Loading job suggestions..." : `Found ${jobs.length} job suggestions`}
+      <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: '#333' }}>
+        {loading
+          ? 'Loading job suggestions...'
+          : `Found ${suggestedJobs.length} job suggestions`}
       </Typography>
 
       <Box
         sx={{
-          maxWidth: "1000px",
-          mx: "auto",
-          position: "relative",
-          overflow: "hidden",
+          maxWidth: '1000px',
+          mx: 'auto',
+          position: 'relative',
+          overflow: 'hidden',
         }}
       >
-        {isLoading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", py: 5 }}>
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
             <CircularProgress />
           </Box>
-        ) : jobs.length === 0 ? (
-          <Box sx={{ textAlign: "center", py: 5, color: "gray" }}>
-            No job suggestions found.
+        ) : error ? (
+          <Box sx={{ textAlign: 'center', py: 5, color: 'red' }}>
+            <Typography variant="h6">
+              Failed to load job suggestions.
+            </Typography>
+          </Box>
+        ) : suggestedJobs.length === 0 ? (
+          <Box sx={{ textAlign: 'center', py: 5, color: 'gray' }}>
+            <Typography variant="h6">
+              No job suggestions found.
+            </Typography>
           </Box>
         ) : (
-          <Swiper
-            ref={swiperRef}
-            spaceBetween={100}
-            slidesPerView={Math.min(3, jobs.length)} // Prevent errors
-            loop={jobs.length > 3} // Enable loop only if more than 3 jobs
-            autoplay={{
-              delay: 3000,
-              disableOnInteraction: false,
-            }}
-            navigation={{ prevEl: prevRef.current, nextEl: nextRef.current }}
-            modules={[Navigation, Autoplay]}
-            onSwiper={(swiper) => {
-              setTimeout(() => {
-                if (prevRef.current && nextRef.current) {
-                  swiper.params.navigation.prevEl = prevRef.current;
-                  swiper.params.navigation.nextEl = nextRef.current;
-                  swiper.navigation.init();
-                  swiper.navigation.update();
-                }
-              }, 100);
-            }}
-          >
-            {jobs.map((job) => (
-              <SwiperSlide key={job.id}>
-                <JobCard job={job} />
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        )}
-
-        {/* Navigation Buttons (only if jobs exist) */}
-        {jobs.length > 0 && (
-          <>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            {/* Left Navigation Button */}
             <IconButton
-              ref={prevRef}
+              onClick={scrollLeft}
+              aria-label="Previous job suggestions"
               sx={{
-                position: "absolute",
+                position: 'absolute',
                 left: 0,
-                top: "50%",
-                transform: "translateY(-50%)",
+                top: '50%',
+                transform: 'translateY(-50%)',
                 zIndex: 10,
-                backgroundColor: "white",
+                backgroundColor: 'white',
+                '&:hover': { backgroundColor: 'grey.100' },
               }}
             >
               <ArrowBack />
             </IconButton>
-            <IconButton
-              ref={nextRef}
+
+            {/* Scrollable Job Cards Container */}
+            <Box
+              ref={scrollRef}
               sx={{
-                position: "absolute",
+                display: 'flex',
+                overflowX: 'auto',
+                scrollBehavior: 'smooth',
+                scrollbarWidth: 'none', // Firefox
+                '&::-webkit-scrollbar': { display: 'none' }, // Chrome/Safari
+                py: 2,
+                px: 1,
+              }}
+            >
+              <Grid container spacing={2} wrap="nowrap">
+                {suggestedJobs.map((job) => (
+                  <Grid
+                    item
+                    key={job.id}
+                    sx={{ minWidth: { xs: '250px', sm: '300px' }, maxWidth: '300px' }}
+                  >
+                    <JobCard job={job} />
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+
+            {/* Right Navigation Button */}
+            <IconButton
+              onClick={scrollRight}
+              aria-label="Next job suggestions"
+              sx={{
+                position: 'absolute',
                 right: 0,
-                top: "50%",
-                transform: "translateY(-50%)",
+                top: '50%',
+                transform: 'translateY(-50%)',
                 zIndex: 10,
-                backgroundColor: "white",
+                backgroundColor: 'white',
+                '&:hover': { backgroundColor: 'grey.100' },
               }}
             >
               <ArrowForward />
             </IconButton>
-          </>
+          </Box>
         )}
       </Box>
     </Box>

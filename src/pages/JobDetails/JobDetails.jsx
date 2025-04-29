@@ -1,72 +1,52 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { 
-  Container, 
-  Paper, 
-  Typography, 
-  Grid, 
-  Chip, 
-  Divider, 
-  Button, 
-  Snackbar,
-  Box
-} from '@mui/material';
-import axios from 'axios';
-import { useAuth } from "../../context/AuthContext";
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  checkApplication,
+  applyForJob,
+  clearApplicationStatus,
+} from '../../store/jobsSlice';
+import { useAuth } from '../../context/AuthContext';
 import Navbar from '../../component/Navbar/Navbar';
 import Chatbot from '../../component/Chatbot/Chatbot';
+import {
+  Container,
+  Paper,
+  Typography,
+  Grid,
+  Chip,
+  Divider,
+  Button,
+  Snackbar,
+  Box,
+} from '@mui/material';
 
 function JobDetails() {
   const location = useLocation();
   const { job } = location.state || {};
-  
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [hasApplied, setHasApplied] = useState(false);
+  const dispatch = useDispatch();
   const { user, resume } = useAuth();
+  const { hasApplied, loading, error, applicationStatus } = useSelector((state) => state.jobs);
 
   useEffect(() => {
-    const checkIfApplied = async () => {
-      try {
-        const response = await axios.get('http://localhost:8080/api/applications');
-        const applications = response.data;
-        const appliedJob = applications.some(
-          (application) => application.jobId === job?.id && application.applicantId === user?.id
-        );
-        setHasApplied(appliedJob);
-      } catch (error) {
-        console.error('Error fetching applications:', error);
-      }
-    };
-
     if (user && job) {
-      checkIfApplied();
+      dispatch(checkApplication({ jobId: job.id, userId: user.id }));
     }
-  }, [user, job]);
+    return () => {
+      dispatch(clearApplicationStatus());
+    };
+  }, [user, job, dispatch]);
 
-  const handleApplyJob = async () => {
+  const handleApplyJob = () => {
     const applicationData = {
       applicationId: 0,
       jobId: job.id,
       applicantId: user.id,
       resumeUrl: resume,
-      applicationStatus: "Pending",
+      applicationStatus: 'Pending',
       appliedDate: new Date().toISOString().split('T')[0],
     };
-
-    try {
-      await axios.post('http://localhost:8080/api/applications/upload', applicationData, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      setSnackbarMessage('Application submitted successfully!');
-      setOpenSnackbar(true);
-      setHasApplied(true);
-    } catch (error) {
-      setSnackbarMessage('Failed to submit application!');
-      setOpenSnackbar(true);
-    }
+    dispatch(applyForJob(applicationData));
   };
 
   return (
@@ -108,7 +88,8 @@ function JobDetails() {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <Typography variant="body2">
-                    <strong>Publish Date:</strong> {new Date(job.publishDate).toLocaleDateString()}
+                    <strong>Publish Date:</strong>{' '}
+                    {new Date(job.publishDate).toLocaleDateString()}
                   </Typography>
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -121,7 +102,11 @@ function JobDetails() {
                     <strong>Skills Required:</strong>
                     <div>
                       {job.skillsRequired?.split(',').map((skill, index) => (
-                        <Chip key={index} label={skill} sx={{ marginRight: 1, marginBottom: 1 }} />
+                        <Chip
+                          key={index}
+                          label={skill}
+                          sx={{ marginRight: 1, marginBottom: 1 }}
+                        />
                       ))}
                     </div>
                   </Typography>
@@ -134,12 +119,21 @@ function JobDetails() {
               </Grid>
 
               <div style={{ marginTop: '20px' }}>
-                {hasApplied ? (
+                {loading ? (
+                  <Typography>Loading...</Typography>
+                ) : error ? (
+                  <Typography color="error">Error: {error}</Typography>
+                ) : hasApplied ? (
                   <Typography variant="body1" color="primary" align="center">
                     You have already applied for this job.
                   </Typography>
                 ) : (
-                  <Button variant="contained" color="primary" fullWidth onClick={handleApplyJob}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    onClick={handleApplyJob}
+                  >
                     Apply for Job
                   </Button>
                 )}
@@ -151,14 +145,14 @@ function JobDetails() {
             </Typography>
           )}
         </Paper>
-        
+
         <Chatbot job={job} />
 
         <Snackbar
-          open={openSnackbar}
+          open={!!applicationStatus}
           autoHideDuration={6000}
-          onClose={() => setOpenSnackbar(false)}
-          message={snackbarMessage}
+          onClose={() => dispatch(clearApplicationStatus())}
+          message={applicationStatus}
         />
       </Container>
     </Box>

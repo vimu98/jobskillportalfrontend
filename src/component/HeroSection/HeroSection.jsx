@@ -1,8 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import { Box, Typography, TextField, InputAdornment, Button, Paper } from "@mui/material";
 import { Search as SearchIcon } from "@mui/icons-material";
-
-import { useNavigate } from "react-router-dom";
 
 const HeroSection = () => {
 

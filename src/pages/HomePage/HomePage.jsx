@@ -1,53 +1,30 @@
-import React, { useEffect, useState } from "react";
-import JobCard from "../../component/JobCard/JobCard";
-import axios from "axios";
-import Navbar from "../../component/NavBar/Navbar";
-import { Grid, Typography } from "@mui/material";
-import CustomPagination from "../../component/Pagination/CustomPagination";
-import HeroSection from "../../component/HeroSection/HeroSection";
-import SuggetionCarousel from "../../component/SuggetionCarousel/SuggetionCarousel";
+import React, { useEffect, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchJobs } from '../../store/jobsSlice';
+import JobCard from '../../component/JobCard/JobCard';
+import Navbar from '../../component/NavBar/Navbar';
+import { Grid, Typography } from '@mui/material';
+import CustomPagination from '../../component/Pagination/CustomPagination';
+import HeroSection from '../../component/HeroSection/HeroSection';
+import SuggetionCarousel from '../../component/SuggetionCarousel/SuggetionCarousel';
 
 const HomePage = () => {
   const jobsPerPage = 12;
   const [currentPage, setCurrentPage] = useState(1);
-  const [jobs, setJobs] = useState([]);
-  const [latestJobsCount, setLatestJobsCount] = useState(0); // New state for latest jobs count
+  const dispatch = useDispatch();
+  const { latestJobs, latestJobsCount} = useSelector((state) => state.jobs);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:8080/api/jobs/all", {
-        headers: {
-          "Authorization": "Bearer " + localStorage.getItem("iap-final-token"),
-        },
-      })
-      .then((response) => {
-        console.log(response.data);
-        
-        // Get today's date in the format yyyy-mm-dd
-        const today = new Date().toISOString().split("T")[0];
-        console.log("Today:", today);
+    dispatch(fetchJobs());
+  }, [dispatch]);
+  
 
-        // Filter jobs by today's date
-        const latestJobs = response.data.filter((job) => {
-          const publishDate = job.publishDate;
-          console.log("Publish Date:", publishDate);
-          // Check if the publish_date exists and matches today's date
-          return publishDate === today;
-        });
-
-        setJobs(latestJobs); // Set the filtered jobs
-        setLatestJobsCount(latestJobs.length); // Set the latest jobs count
-      })
-      .catch((error) => {
-        console.error("API Error:", error);
-      });
-  }, []);
-
-  console.log(localStorage.getItem("iap-final-token"));
-
-  const totalPages = Math.ceil(jobs.length / jobsPerPage);
+  const totalPages = Math.ceil(latestJobs.length / jobsPerPage);
   const startIndex = (currentPage - 1) * jobsPerPage;
-  const displayedJobs = jobs.slice(startIndex, startIndex + jobsPerPage);
+  const displayedJobs = latestJobs.slice(startIndex, startIndex + jobsPerPage);
+
+  //if (loading) return <Typography>Loading...</Typography>;
+  //if (error) return <Typography>Errorrrr: {error}</Typography>;
 
   return (
     <div>
@@ -55,11 +32,16 @@ const HomePage = () => {
       <HeroSection />
       <SuggetionCarousel />
 
-      {/* Display the count of latest jobs */}
-      <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold", color: "#333" }} align="left" paddingLeft={4} gutterBottom>
+      <Typography
+        variant="h6"
+        sx={{ mb: 2, fontWeight: 'bold', color: '#333' }}
+        align="left"
+        paddingLeft={4}
+        gutterBottom
+      >
         {latestJobsCount > 0
           ? `Latest Jobs: ${latestJobsCount} available today`
-          : "No jobs available for today"}
+          : 'No jobs available for today'}
       </Typography>
 
       <Grid container spacing={2} padding={2}>
@@ -78,7 +60,6 @@ const HomePage = () => {
         )}
       </Grid>
 
-      {/* Pagination Component */}
       {totalPages > 1 && (
         <CustomPagination
           totalPages={totalPages}
